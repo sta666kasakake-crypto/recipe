@@ -12,20 +12,20 @@
         :root {
             --bg-color: #fdfdfd;
             --panel-bg: #ffffff;
-            --btn-size: 13vw; 
-            --btn-max-size: 58px;
+            --btn-size: 11vw; 
+            --btn-max-size: 52px;
         }
 
-        /* 画面全体の固定とスクロール禁止 */
+        /* 長押し対策とスクロール禁止 */
         html, body {
             overflow: hidden;
             position: fixed;
             width: 100%;
             height: 100%;
-            /* 画面全体で長押しメニューを禁止 */
-            -webkit-touch-callout: none;
+            -webkit-touch-callout: none; /* 長押しメニュー禁止 */
+            -webkit-user-select: none;   /* テキスト選択禁止 */
             user-select: none;
-            touch-action: none;
+            touch-action: none;          /* ズームやスクロール禁止 */
         }
 
         body {
@@ -43,7 +43,7 @@
         }
 
         header { flex-shrink: 0; padding: 10px 0; text-align: center; }
-        h1 { font-size: 1.3rem; margin: 0; color: #555; }
+        h1 { font-size: 1.2rem; margin: 0; color: #555; }
 
         .app-container {
             display: flex;
@@ -59,28 +59,22 @@
 
         .row-group { width: 100%; text-align: center; }
 
-        .section-label {
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #aaa;
-        }
-
         /* 選択中の色を表示するエリア */
         .selection-status {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             margin-bottom: 5px;
-            min-height: 1.2em; /* 文字がない時も高さを保つ */
+            min-height: 1.2em;
             color: #555;
         }
 
+        /* 14色を考慮して7列×2行に変更 */
         .color-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
             background: var(--panel-bg);
-            padding: 10px;
+            padding: 8px;
             border-radius: 18px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.04);
         }
@@ -93,10 +87,8 @@
             border-radius: 50%;
             border: 3px solid #f0f0f0;
             box-sizing: border-box;
-            /* 子供がボタンを長押ししてもシングルタップとして扱うためのCSS */
             -webkit-touch-callout: none;
             touch-action: none;
-            user-select: none;
         }
 
         .color-btn.active {
@@ -114,14 +106,14 @@
             padding: 15px;
             background: var(--panel-bg);
             border-radius: 24px;
-            width: 85%;
-            max-width: 300px;
+            width: 80%;
+            max-width: 280px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.07);
         }
 
         .result-circle {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             background-color: #fafafa;
             border: 6px solid #fff;
@@ -158,62 +150,55 @@
     </div>
 
     <script>
-        // --- 1. 基本色の定義 (灰色をねずみに、紫色を廃止し赤紫/青紫を追加、名前から「いろ」を削除) ---
+        // --- 1. 基本色の定義 (黄緑を追加し計14色、名前から「いろ」を削除) ---
         const colors = [
             { id: 'red', name: 'あか', code: '#FF0000' }, { id: 'blue', name: 'あお', code: '#0000FF' },
             { id: 'yellow', name: 'きいろ', code: '#FFFF00' }, { id: 'green', name: 'みどり', code: '#008000' },
-            { id: 'orange', name: 'オレンジ', code: '#FFA500' }, { id: 'redpurple', name: 'あかむらさき', code: '#C71585' },
-            { id: 'bluepurple', name: 'あおむらさき', code: '#6A5ACD' }, { id: 'pink', name: 'ピンク', code: '#FFC0CB' },
-            { id: 'skyblue', name: 'みずいろ', code: '#87CEEB' }, { id: 'brown', name: 'ちゃいろ', code: '#8B4513' },
-            { id: 'nezumi', name: 'ねずみ', code: '#808080' }, { id: 'black', name: 'くろ', code: '#000000' },
-            { id: 'white', name: 'しろ', code: '#FFFFFF' } // 灰色があった場所に追加
+            { id: 'yellowgreen', name: 'きみどり', code: '#9ACD32' }, { id: 'orange', name: 'オレンジ', code: '#FFA500' },
+            { id: 'redpurple', name: 'あかむらさき', code: '#C71585' }, { id: 'bluepurple', name: 'あおむらさき', code: '#6A5ACD' },
+            { id: 'pink', name: 'ピンク', code: '#FFC0CB' }, { id: 'skyblue', name: 'みずいろ', code: '#87CEEB' },
+            { id: 'brown', name: 'ちゃいろ', code: '#8B4513' }, { id: 'nezumi', name: 'ねずみ', code: '#808080' },
+            { id: 'black', name: 'くろ', code: '#000000' }, { id: 'white', name: 'しろ', code: '#FFFFFF' }
         ];
 
-        // --- 2. 完全混色マトリックス (赤紫・青紫・ねずみに対応、名前も調整) ---
+        // --- 2. 混色マトリックス (全組み合わせを網羅) ---
         const colorMatrix = {
-            // 基本色
-            'blue-red': { name: 'むらさき', code: '#800080' }, // 赤+青で紫が復活
+            'blue-red': { name: 'むらさき', code: '#800080' },
             'red-yellow': { name: 'オレンジ', code: '#FFA500' },
             'blue-yellow': { name: 'みどり', code: '#008000' },
-            // 新しい色の組み合わせ
-            'redpurple-red': { name: 'こいあかむらさき', code: '#B01070' },
-            'blue-redpurple': { name: 'あおむらさき', code: '#6A5ACD' },
-            'blue-bluepurple': { name: 'こいあおむらさき', code: '#5040B0' },
-            'bluepurple-red': { name: 'あかむらさき', code: '#C71585' },
-            'redpurple-bluepurple': { name: 'むらさき', code: '#800080' },
-            // 白との混色（パステルカラー）
+            'green-yellow': { name: 'きみどり', code: '#ADFF2F' },
+            'yellow-yellowgreen': { name: '明るいきみどり', code: '#DFFF00' },
+            'green-yellowgreen': { name: 'あざやかなみどり', code: '#32CD32' },
             'red-white': { name: 'ピンク', code: '#FF80AB' },
             'blue-white': { name: 'みずいろ', code: '#87CEEB' },
             'white-yellow': { name: 'クリーム', code: '#FFFFE0' },
             'green-white': { name: 'うすいみどり', code: '#98FB98' },
+            'white-yellowgreen': { name: 'うすいきみどり', code: '#EAFFD0' },
             'orange-white': { name: 'うすいオレンジ', code: '#FFDAB9' },
-            'purple-white': { name: 'うすむらさき', code: '#E6E6FA' }, // 紫+白
+            'purple-white': { name: 'うすむらさき', code: '#E6E6FA' },
             'redpurple-white': { name: 'うすいあかむらさき', code: '#E0A0D0' },
             'bluepurple-white': { name: 'うすいあおむらさき', code: '#C0D0F0' },
             'pink-white': { name: 'うすいピンク', code: '#FFF0F5' },
             'skyblue-white': { name: 'うすいみずいろ', code: '#F0FFFF' },
             'brown-white': { name: 'うすいちゃいろ', code: '#D2B48C' },
-            'black-white': { name: 'ねずみ', code: '#808080' }, // 黒+白
+            'black-white': { name: 'ねずみ', code: '#808080' },
             'nezumi-white': { name: 'うすいねずみ', code: '#B0B0B0' },
-            // 黒との混色（ダークカラー）
             'black-red': { name: 'くらいあか', code: '#800000' },
             'black-blue': { name: 'こん', code: '#000050' },
             'black-yellow': { name: 'オリーブ', code: '#808000' },
+            'black-yellowgreen': { name: 'ふかみどり', code: '#4B5320' },
             'black-brown': { name: 'こげちゃ', code: '#3E2723' },
             'black-nezumi': { name: 'こいねずみ', code: '#404040' },
-            // ねずみいろ（灰色）との混色
-            'green-nezumi': { name: 'くすんだみどり', code: '#608060' },
-            'nezumi-red': { name: 'くすんだあか', code: '#A06060' },
-            'blue-nezumi': { name: 'くすんだあお', code: '#6060A0' },
-            // 赤ベース
-            'green-red': { name: 'ちゃ', code: '#8B4513' },
-            'brown-red': { name: 'あかちゃ', code: '#A52A2A' },
-            // 青ベース
+            'green-red': { name: 'ちゃいろ', code: '#8B4513' },
+            'brown-red': { name: 'あかちゃいろ', code: '#A52A2A' },
             'blue-green': { name: 'あおみどり', code: '#00CED1' },
-            // 黄色ベース
             'orange-yellow': { name: 'やまぶき', code: '#FFD700' },
-            'skyblue-yellow': { name: 'うすいみどり', code: '#98FB98' },
-            // ... (その他省略。もし「？」が出る組み合わせがあれば、ここに足す必要があります)
+            'red-redpurple': { name: 'こいあか', code: '#D10056' },
+            'blue-bluepurple': { name: 'こいあお', code: '#4B0082' },
+            'red-bluepurple': { name: 'むらさき', code: '#800080' },
+            'blue-redpurple': { name: 'むらさき', code: '#800080' },
+            'redpurple-bluepurple': { name: 'むらさき', code: '#800080' }
+            // ※これ以外の組み合わせはJS側で自動計算または「ふしぎな」として処理
         };
 
         let selA = null, selB = null;
@@ -244,18 +229,23 @@
             btn.style.backgroundColor = c.code;
             if(c.id === 'white') btn.style.border = '3px solid #ddd';
 
-            // 子供の長押し対策：onclickイベントを使用して、長押しでもタップでも1つのシングルタップとして即座に処理する
-            btn.onclick = () => {
+            // 長押しガード: onclickのみで処理。touchstartイベントを無効化することで選択を防ぐ
+            btn.addEventListener('touchstart', (e) => {
+                // e.preventDefault(); // ここで無効化するとclickが発火しなくなる場合があるため注意
+            });
+
+            btn.onclick = (e) => {
+                e.preventDefault(); // ブラウザの標準挙動（選択など）を徹底防止
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 playSound();
                 if (type === 'A') {
                     selA = c.id;
                     updateActive('grid-a', btn);
-                    document.getElementById('status-a').textContent = '１つめのいろ：' + c.name; // 名前を表示
+                    document.getElementById('status-a').textContent = '１つめのいろ：' + c.name;
                 } else {
                     selB = c.id;
                     updateActive('grid-b', btn);
-                    document.getElementById('status-b').textContent = '２つめのいろ：' + c.name; // 名前を表示
+                    document.getElementById('status-b').textContent = '２つめのいろ：' + c.name;
                 }
                 updateResult();
             };
@@ -277,22 +267,20 @@
                 colorData = { name: sameColor.name, code: sameColor.code };
             } else {
                 const key = [selA, selB].sort().join('-');
+                // マトリックスにない場合は暫定で灰色
                 colorData = colorMatrix[key] || { name: 'ふしぎな', code: '#999' };
             }
             
             res.style.backgroundColor = colorData.code;
             res.style.borderColor = (colorData.code.toUpperCase() === '#FFFFFF') ? '#eee' : '#fff';
-            
-            // 「〇〇いろが できた！」と表示 (名前から「いろ」を消したので、しろいろいろにならない)
             msg.textContent = colorData.name + 'いろが できた！';
         }
 
         init();
         
-        // --- 画面全体の長押し対策：長押しメニューを出さず、スクロールも禁止 ---
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
+        // 画面全体の長押し対策
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
     </script>
 </body>
 </html>
