@@ -1,211 +1,366 @@
-// --- 1. 基本色の定義 ---
-const colors = [
-    { id: 'red', name: 'あか', code: '#FF0000' }, { id: 'blue', name: 'あお', code: '#0000FF' },
-    { id: 'yellow', name: 'きいろ', code: '#FFFF00' }, { id: 'green', name: 'みどり', code: '#008000' },
-    { id: 'yellowgreen', name: 'きみどり', code: '#9ACD32' }, { id: 'orange', name: 'オレンジ', code: '#FFA500' },
-    { id: 'redpurple', name: 'あかむらさき', code: '#C71585' }, { id: 'bluepurple', name: 'あおむらさき', code: '#6A5ACD' },
-    { id: 'pink', name: 'ピンク', code: '#FFC0CB' }, { id: 'skyblue', name: 'みずいろ', code: '#87CEEB' },
-    { id: 'brown', name: 'ちゃいろ', code: '#8B4513' }, { id: 'nezumi', name: 'ねずみ', code: '#808080' },
-    { id: 'black', name: 'くろ', code: '#000000' }, { id: 'white', name: 'しろ', code: '#FFFFFF' }
-];
-
-// --- 2. 混色マトリックス (14色 × 14色 = 全91パターン完全網羅) ---
-const colorMatrix = {
-    // 三原色・基本 (3通り)
-    'red-blue': { name: 'むらさき', code: '#800080' },
-    'red-yellow': { name: 'オレンジ', code: '#FFA500' },
-    'blue-yellow': { name: 'みどり', code: '#008000' },
-
-    // しろを混ぜる (13通り)
-    'red-white': { name: 'ピンク', code: '#FFB6C1' },
-    'blue-white': { name: 'みずいろ', code: '#87CEEB' },
-    'yellow-white': { name: 'クリーム', code: '#FFFFE0' },
-    'green-white': { name: 'うすいみどり', code: '#98FB98' },
-    'yellowgreen-white': { name: 'うすいきみどり', code: '#EAFFD0' },
-    'orange-white': { name: 'うすいオレンジ', code: '#FFDAB9' },
-    'redpurple-white': { name: 'うすいあかむらさき', code: '#E0A0D0' },
-    'bluepurple-white': { name: 'うすいあおむらさき', code: '#C0D0F0' },
-    'pink-white': { name: 'うすいピンク', code: '#FFF0F5' },
-    'skyblue-white': { name: 'うすいみずいろ', code: '#F0FFFF' },
-    'brown-white': { name: 'うすいちゃいろ', code: '#D2B48C' },
-    'nezumi-white': { name: 'うすいねずみ', code: '#D3D3D3' },
-    'black-white': { name: 'ねずみ', code: '#808080' },
-
-    // くろを混ぜる (12通り)
-    'red-black': { name: 'くらいあか', code: '#8B0000' },
-    'blue-black': { name: 'こん', code: '#000080' },
-    'yellow-black': { name: 'オリーブ', code: '#808000' },
-    'green-black': { name: 'ふかみどり', code: '#006400' },
-    'yellowgreen-black': { name: 'くらいきみどり', code: '#556B2F' },
-    'orange-black': { name: 'こげちゃ', code: '#8B4500' },
-    'redpurple-black': { name: 'くらいあかむらさき', code: '#5A005A' },
-    'bluepurple-black': { name: 'くらいあおむらさき', code: '#311432' },
-    'pink-black': { name: 'くすんだピンク', code: '#905D5D' },
-    'skyblue-black': { name: 'くらいみずいろ', code: '#3A5FCD' },
-    'brown-black': { name: 'こげちゃ', code: '#3E2723' },
-    'nezumi-black': { name: 'こいねずみ', code: '#4F4F4F' },
-
-    // ねずみを混ぜる (11通り)
-    'red-nezumi': { name: 'くすんだあか', code: '#CD5C5C' },
-    'blue-nezumi': { name: 'くすんだあお', code: '#5F9EA0' },
-    'yellow-nezumi': { name: 'からし', code: '#BDB76B' },
-    'green-nezumi': { name: 'くすんだみどり', code: '#8FBC8F' },
-    'yellowgreen-nezumi': { name: 'くすんだきみどり', code: '#8F974A' },
-    'orange-nezumi': { name: 'くすんだオレンジ', code: '#D2B48C' },
-    'redpurple-nezumi': { name: 'くすんだあかむらさき', code: '#9E7B9B' },
-    'bluepurple-nezumi': { name: 'くすんだあおむらさき', code: '#7B68EE' },
-    'pink-nezumi': { name: 'アッシュピンク', code: '#D8BFD8' },
-    'skyblue-nezumi': { name: 'アッシュブルー', code: '#B0C4DE' },
-    'brown-nezumi': { name: 'くすんだちゃいろ', code: '#A0522D' },
-
-    // あかベースの残り (8通り)
-    'red-green': { name: 'ちゃいろ', code: '#8B4513' },
-    'red-yellowgreen': { name: 'あかちゃいろ', code: '#A0522D' },
-    'red-orange': { name: 'しゅ', code: '#FF4500' },
-    'red-redpurple': { name: 'こいあか', code: '#DC143C' },
-    'red-bluepurple': { name: 'あかむらさき', code: '#C71585' },
-    'red-pink': { name: 'こいピンク', code: '#FF1493' },
-    'red-skyblue': { name: 'くすんだむらさき', code: '#9370DB' },
-    'red-brown': { name: 'あかちゃいろ', code: '#A52A2A' },
-
-    // あおベースの残り (8通り)
-    'blue-green': { name: 'あおみどり', code: '#008B8B' },
-    'blue-yellowgreen': { name: 'ふかみどり', code: '#228B22' },
-    'blue-orange': { name: 'ちゃいろ', code: '#8B4513' },
-    'blue-redpurple': { name: 'むらさき', code: '#800080' },
-    'blue-bluepurple': { name: 'こん', code: '#483D8B' },
-    'blue-pink': { name: 'あかるいむらさき', code: '#DA70D6' },
-    'blue-skyblue': { name: 'こいみずいろ', code: '#1E90FF' },
-    'blue-brown': { name: 'こげちゃ', code: '#5D4037' },
-
-    // きいろベースの残り (8通り)
-    'yellow-green': { name: 'きみどり', code: '#ADFF2F' },
-    'yellow-yellowgreen': { name: 'あかるいきみどり', code: '#DFFF00' },
-    'yellow-orange': { name: 'やまぶき', code: '#FFD700' },
-    'yellow-redpurple': { name: 'ちゃいろ', code: '#D2691E' },
-    'yellow-bluepurple': { name: 'ちゃいろ', code: '#8B4513' },
-    'yellow-pink': { name: 'うすだいだい', code: '#FFDAB9' },
-    'yellow-skyblue': { name: 'うすいみどり', code: '#98FB98' },
-    'yellow-brown': { name: 'おうどいろ', code: '#DAA520' },
-
-    // みどりベースの残り (7通り)
-    'green-yellowgreen': { name: 'あざやかなみどり', code: '#32CD32' },
-    'green-orange': { name: 'うすいちゃいろ', code: '#B8860B' },
-    'green-redpurple': { name: 'くすんだちゃいろ', code: '#8B4513' },
-    'green-bluepurple': { name: 'くすんだあお', code: '#4682B4' },
-    'green-pink': { name: 'くすんだピンク', code: '#BC8F8F' },
-    'green-skyblue': { name: 'エメラルド', code: '#40E0D0' },
-    'green-brown': { name: 'ふかみどり', code: '#556B2F' },
-
-    // きみどりベースの残り (6通り)
-    'yellowgreen-orange': { name: 'おうどいろ', code: '#DAA520' },
-    'yellowgreen-redpurple': { name: 'くすんだちゃいろ', code: '#A0522D' },
-    'yellowgreen-bluepurple': { name: 'くすんだあおみどり', code: '#5F9EA0' },
-    'yellowgreen-pink': { name: 'うすいちゃいろ', code: '#DEB887' },
-    'yellowgreen-skyblue': { name: 'あかるいみどり', code: '#7FFFD4' },
-    'yellowgreen-brown': { name: 'オリーブ', code: '#6B8E23' },
-
-    // オレンジベースの残り (5通り)
-    'orange-redpurple': { name: 'あかちゃいろ', code: '#B22222' },
-    'orange-bluepurple': { name: 'ちゃいろ', code: '#8B4513' },
-    'orange-pink': { name: 'サーモンピンク', code: '#FA8072' },
-    'orange-skyblue': { name: 'うすちゃいろ', code: '#F4A460' },
-    'orange-brown': { name: 'あかちゃいろ', code: '#A0522D' },
-
-    // あかむらさきベースの残り (4通り)
-    'redpurple-bluepurple': { name: 'むらさき', code: '#800080' },
-    'redpurple-pink': { name: 'あかるいあかむらさき', code: '#FF00FF' },
-    'redpurple-skyblue': { name: 'あおむらさき', code: '#8A2BE2' },
-    'redpurple-brown': { name: 'こいあかちゃ', code: '#800000' },
-
-    // あおむらさきベースの残り (3通り)
-    'bluepurple-pink': { name: 'あかるいむらさき', code: '#E066FF' },
-    'bluepurple-skyblue': { name: 'ふじ', code: '#7B68EE' },
-    'bluepurple-brown': { name: 'こげちゃ', code: '#4A3636' },
-
-    // ピンクベースの残り (2通り)
-    'pink-skyblue': { name: 'うすむらさき', code: '#E6E6FA' },
-    'pink-brown': { name: 'くすんだピンク', code: '#BC8F8F' },
-
-    // みずいろベースの残り (1通り)
-    'skyblue-brown': { name: 'ねずみ', code: '#708090' }
-};
-
-let selA = null, selB = null;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playSound() {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.setValueAtTime(160, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-}
-
-function init() {
-    const gA = document.getElementById('grid-a'), gB = document.getElementById('grid-b');
-    colors.forEach(c => {
-        gA.appendChild(createBtn(c, 'A'));
-        gB.appendChild(createBtn(c, 'B'));
-    });
-}
-
-function createBtn(c, type) {
-    const btn = document.createElement('div');
-    btn.className = 'color-btn';
-    btn.style.backgroundColor = c.code;
-    if(c.id === 'white') btn.style.border = '3px solid #ddd';
-
-    btn.addEventListener('touchstart', (e) => {});
-
-    btn.onclick = (e) => {
-        e.preventDefault();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        playSound();
-        if (type === 'A') {
-            selA = c.id;
-            updateActive('grid-a', btn);
-            document.getElementById('status-a').textContent = '１つめのいろ：' + c.name;
-        } else {
-            selB = c.id;
-            updateActive('grid-b', btn);
-            document.getElementById('status-b').textContent = '２つめのいろ：' + c.name;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>まぜまぜ色シミュレーター 最終版</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --panel-bg: #ffffff;
+            --btn-size: 11vw; 
+            --btn-max-size: 52px;
         }
-        updateResult();
-    };
-    return btn;
-}
 
-function updateActive(id, btn) {
-    document.querySelectorAll(`#${id} .color-btn`).forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-}
+        /* 長押し対策とスクロール禁止 */
+        html, body {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            -webkit-touch-callout: none; /* 長押しメニュー禁止 */
+            -webkit-user-select: none;   /* テキスト選択禁止 */
+            user-select: none;
+            touch-action: none;          /* ズームやスクロール禁止 */
+        }
 
-// 判定ロジックの修正：A-B と B-A の両方を検索し、ソートを行わない
-function updateResult() {
-    if (!selA || !selB) return;
-    const res = document.getElementById('result-display'), msg = document.getElementById('msg');
-    
-    let colorData;
-    if (selA === selB) {
-        const sameColor = colors.find(c => c.id === selA);
-        colorData = { name: sameColor.name, code: sameColor.code };
-    } else {
-        const key1 = selA + '-' + selB;
-        const key2 = selB + '-' + selA;
-        colorData = colorMatrix[key1] || colorMatrix[key2] || { name: 'ふしぎな', code: '#999999' };
-    }
-    
-    res.style.backgroundColor = colorData.code;
-    res.style.borderColor = (colorData.code.toUpperCase() === '#FFFFFF') ? '#eee' : '#fff';
-    msg.textContent = colorData.name + 'いろが できた！';
-}
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100dvh; 
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            box-sizing: border-box;
+            color: #333;
+        }
 
-init();
+        header { flex-shrink: 0; padding: 10px 0; text-align: center; }
+        h1 { font-size: 1.2rem; margin: 0; color: #555; }
 
-// 画面全体の長押し・メニュー展開対策
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 100%;
+            max-width: 480px;
+            flex-grow: 1;
+            padding: 5px 10px;
+            box-sizing: border-box;
+        }
+
+        .row-group { width: 100%; text-align: center; }
+
+        /* 選択中の色を表示するエリア */
+        .selection-status {
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            min-height: 1.2em;
+            color: #555;
+        }
+
+        /* 14色を考慮して7列×2行に配置 */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            background: var(--panel-bg);
+            padding: 8px;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        .color-btn {
+            width: var(--btn-size);
+            height: var(--btn-size);
+            max-width: var(--btn-max-size);
+            max-height: var(--btn-max-size);
+            border-radius: 50%;
+            border: 3px solid #f0f0f0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            touch-action: none;
+        }
+
+        .color-btn.active {
+            border-color: #555;
+            transform: scale(1.1);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+        }
+
+        .symbol { font-size: 1.4rem; color: #ddd; margin: 2px 0; font-weight: bold; }
+
+        .result-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: var(--panel-bg);
+            border-radius: 24px;
+            width: 80%;
+            max-width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+        }
+
+        .result-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: #fafafa;
+            border: 6px solid #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: background-color 0.4s ease;
+        }
+
+        .instruction { margin-top: 10px; font-size: 1rem; color: #444; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <header><h1>なにいろに なるかな？</h1></header>
+
+    <div class="app-container">
+        <div class="row-group">
+            <div class="selection-status" id="status-a">いろを えらんでね！</div>
+            <div class="color-grid" id="grid-a"></div>
+        </div>
+
+        <div class="symbol">＋</div>
+
+        <div class="row-group">
+            <div class="selection-status" id="status-b">いろを えらんでね！</div>
+            <div class="color-grid" id="grid-b"></div>
+        </div>
+
+        <div class="symbol">＝</div>
+
+        <div class="result-box">
+            <div class="result-circle" id="result-display"></div>
+            <div class="instruction" id="msg">いろを えらんでね！</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 基本色の定義 ---
+        const colors = [
+            { id: 'red', name: 'あか', code: '#FF0000' }, { id: 'blue', name: 'あお', code: '#0000FF' },
+            { id: 'yellow', name: 'きいろ', code: '#FFFF00' }, { id: 'green', name: 'みどり', code: '#008000' },
+            { id: 'yellowgreen', name: 'きみどり', code: '#9ACD32' }, { id: 'orange', name: 'オレンジ', code: '#FFA500' },
+            { id: 'redpurple', name: 'あかむらさき', code: '#C71585' }, { id: 'bluepurple', name: 'あおむらさき', code: '#6A5ACD' },
+            { id: 'pink', name: 'ピンク', code: '#FFC0CB' }, { id: 'skyblue', name: 'みずいろ', code: '#87CEEB' },
+            { id: 'brown', name: 'ちゃいろ', code: '#8B4513' }, { id: 'nezumi', name: 'ねずみ', code: '#808080' },
+            { id: 'black', name: 'くろ', code: '#000000' }, { id: 'white', name: 'しろ', code: '#FFFFFF' }
+        ];
+
+        // --- 2. 混色マトリックス (14色 × 14色 = 全91パターン完全網羅) ---
+        const colorMatrix = {
+            // 三原色・基本
+            'red-blue': { name: 'むらさき', code: '#800080' },
+            'red-yellow': { name: 'オレンジ', code: '#FFA500' },
+            'blue-yellow': { name: 'みどり', code: '#008000' },
+
+            // しろを混ぜる
+            'red-white': { name: 'ピンク', code: '#FFB6C1' },
+            'blue-white': { name: 'みずいろ', code: '#87CEEB' },
+            'yellow-white': { name: 'クリーム', code: '#FFFFE0' },
+            'green-white': { name: 'うすいみどり', code: '#98FB98' },
+            'yellowgreen-white': { name: 'うすいきみどり', code: '#EAFFD0' },
+            'orange-white': { name: 'うすいオレンジ', code: '#FFDAB9' },
+            'redpurple-white': { name: 'うすいあかむらさき', code: '#E0A0D0' },
+            'bluepurple-white': { name: 'うすいあおむらさき', code: '#C0D0F0' },
+            'pink-white': { name: 'うすいピンク', code: '#FFF0F5' },
+            'skyblue-white': { name: 'うすいみずいろ', code: '#F0FFFF' },
+            'brown-white': { name: 'うすいちゃいろ', code: '#D2B48C' },
+            'nezumi-white': { name: 'うすいねずみ', code: '#D3D3D3' },
+            'black-white': { name: 'ねずみ', code: '#808080' },
+
+            // くろを混ぜる
+            'red-black': { name: 'くらいあか', code: '#8B0000' },
+            'blue-black': { name: 'こん', code: '#000080' },
+            'yellow-black': { name: 'オリーブ', code: '#808000' },
+            'green-black': { name: 'ふかみどり', code: '#006400' },
+            'yellowgreen-black': { name: 'くらいきみどり', code: '#556B2F' },
+            'orange-black': { name: 'こげちゃ', code: '#8B4500' },
+            'redpurple-black': { name: 'くらいあかむらさき', code: '#5A005A' },
+            'bluepurple-black': { name: 'くらいあおむらさき', code: '#311432' },
+            'pink-black': { name: 'くすんだピンク', code: '#905D5D' },
+            'skyblue-black': { name: 'くらいみずいろ', code: '#3A5FCD' },
+            'brown-black': { name: 'こげちゃ', code: '#3E2723' },
+            'nezumi-black': { name: 'こいねずみ', code: '#4F4F4F' },
+
+            // ねずみを混ぜる
+            'red-nezumi': { name: 'くすんだあか', code: '#CD5C5C' },
+            'blue-nezumi': { name: 'くすんだあお', code: '#5F9EA0' },
+            'yellow-nezumi': { name: 'からし', code: '#BDB76B' },
+            'green-nezumi': { name: 'くすんだみどり', code: '#8FBC8F' },
+            'yellowgreen-nezumi': { name: 'くすんだきみどり', code: '#8F974A' },
+            'orange-nezumi': { name: 'くすんだオレンジ', code: '#D2B48C' },
+            'redpurple-nezumi': { name: 'くすんだあかむらさき', code: '#9E7B9B' },
+            'bluepurple-nezumi': { name: 'くすんだあおむらさき', code: '#7B68EE' },
+            'pink-nezumi': { name: 'アッシュピンク', code: '#D8BFD8' },
+            'skyblue-nezumi': { name: 'アッシュブルー', code: '#B0C4DE' },
+            'brown-nezumi': { name: 'くすんだちゃいろ', code: '#A0522D' },
+
+            // あかベースの残り
+            'red-green': { name: 'ちゃいろ', code: '#8B4513' },
+            'red-yellowgreen': { name: 'あかちゃいろ', code: '#A0522D' },
+            'red-orange': { name: 'しゅ', code: '#FF4500' },
+            'red-redpurple': { name: 'こいあか', code: '#DC143C' },
+            'red-bluepurple': { name: 'あかむらさき', code: '#C71585' },
+            'red-pink': { name: 'こいピンク', code: '#FF1493' },
+            'red-skyblue': { name: 'くすんだむらさき', code: '#9370DB' },
+            'red-brown': { name: 'あかちゃいろ', code: '#A52A2A' },
+
+            // あおベースの残り
+            'blue-green': { name: 'あおみどり', code: '#008B8B' },
+            'blue-yellowgreen': { name: 'ふかみどり', code: '#228B22' },
+            'blue-orange': { name: 'ちゃいろ', code: '#8B4513' },
+            'blue-redpurple': { name: 'むらさき', code: '#800080' },
+            'blue-bluepurple': { name: 'こん', code: '#483D8B' },
+            'blue-pink': { name: 'あかるいむらさき', code: '#DA70D6' },
+            'blue-skyblue': { name: 'こいみずいろ', code: '#1E90FF' },
+            'blue-brown': { name: 'こげちゃ', code: '#5D4037' },
+
+            // きいろベースの残り
+            'yellow-green': { name: 'きみどり', code: '#ADFF2F' },
+            'yellow-yellowgreen': { name: 'あかるいきみどり', code: '#DFFF00' },
+            'yellow-orange': { name: 'やまぶき', code: '#FFD700' },
+            'yellow-redpurple': { name: 'ちゃいろ', code: '#D2691E' },
+            'yellow-bluepurple': { name: 'ちゃいろ', code: '#8B4513' },
+            'yellow-pink': { name: 'うすだいだい', code: '#FFDAB9' },
+            'yellow-skyblue': { name: 'うすいみどり', code: '#98FB98' },
+            'yellow-brown': { name: 'おうどいろ', code: '#DAA520' },
+
+            // みどりベースの残り
+            'green-yellowgreen': { name: 'あざやかなみどり', code: '#32CD32' },
+            'green-orange': { name: 'うすいちゃいろ', code: '#B8860B' },
+            'green-redpurple': { name: 'くすんだちゃいろ', code: '#8B4513' },
+            'green-bluepurple': { name: 'くすんだあお', code: '#4682B4' },
+            'green-pink': { name: 'くすんだピンク', code: '#BC8F8F' },
+            'green-skyblue': { name: 'エメラルド', code: '#40E0D0' },
+            'green-brown': { name: 'ふかみどり', code: '#556B2F' },
+
+            // きみどりベースの残り
+            'yellowgreen-orange': { name: 'おうどいろ', code: '#DAA520' },
+            'yellowgreen-redpurple': { name: 'くすんだちゃいろ', code: '#A0522D' },
+            'yellowgreen-bluepurple': { name: 'くすんだあおみどり', code: '#5F9EA0' },
+            'yellowgreen-pink': { name: 'うすいちゃいろ', code: '#DEB887' },
+            'yellowgreen-skyblue': { name: 'あかるいみどり', code: '#7FFFD4' },
+            'yellowgreen-brown': { name: 'オリーブ', code: '#6B8E23' },
+
+            // オレンジベースの残り
+            'orange-redpurple': { name: 'あかちゃいろ', code: '#B22222' },
+            'orange-bluepurple': { name: 'ちゃいろ', code: '#8B4513' },
+            'orange-pink': { name: 'サーモンピンク', code: '#FA8072' },
+            'orange-skyblue': { name: 'うすちゃいろ', code: '#F4A460' },
+            'orange-brown': { name: 'あかちゃいろ', code: '#A0522D' },
+
+            // あかむらさきベースの残り
+            'redpurple-bluepurple': { name: 'むらさき', code: '#800080' },
+            'redpurple-pink': { name: 'あかるいあかむらさき', code: '#FF00FF' },
+            'redpurple-skyblue': { name: 'あおむらさき', code: '#8A2BE2' },
+            'redpurple-brown': { name: 'こいあかちゃ', code: '#800000' },
+
+            // あおむらさきベースの残り
+            'bluepurple-pink': { name: 'あかるいむらさき', code: '#E066FF' },
+            'bluepurple-skyblue': { name: 'ふじ', code: '#7B68EE' },
+            'bluepurple-brown': { name: 'こげちゃ', code: '#4A3636' },
+
+            // ピンクベースの残り
+            'pink-skyblue': { name: 'うすむらさき', code: '#E6E6FA' },
+            'pink-brown': { name: 'くすんだピンク', code: '#BC8F8F' },
+
+            // みずいろベースの残り
+            'skyblue-brown': { name: 'ねずみ', code: '#708090' }
+        };
+
+        let selA = null, selB = null;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function init() {
+            const gA = document.getElementById('grid-a'), gB = document.getElementById('grid-b');
+            colors.forEach(c => {
+                gA.appendChild(createBtn(c, 'A'));
+                gB.appendChild(createBtn(c, 'B'));
+            });
+        }
+
+        function createBtn(c, type) {
+            const btn = document.createElement('div');
+            btn.className = 'color-btn';
+            btn.style.backgroundColor = c.code;
+            if(c.id === 'white') btn.style.border = '3px solid #ddd';
+
+            btn.addEventListener('touchstart', (e) => {});
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                playSound();
+                if (type === 'A') {
+                    selA = c.id;
+                    updateActive('grid-a', btn);
+                    document.getElementById('status-a').textContent = '１つめのいろ：' + c.name;
+                } else {
+                    selB = c.id;
+                    updateActive('grid-b', btn);
+                    document.getElementById('status-b').textContent = '２つめのいろ：' + c.name;
+                }
+                updateResult();
+            };
+            return btn;
+        }
+
+        function updateActive(id, btn) {
+            document.querySelectorAll(`#${id} .color-btn`).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 判定ロジック：A-B と B-A の両方を検索して必ず結果を出す
+        function updateResult() {
+            if (!selA || !selB) return;
+            const res = document.getElementById('result-display'), msg = document.getElementById('msg');
+            
+            let colorData;
+            if (selA === selB) {
+                const sameColor = colors.find(c => c.id === selA);
+                colorData = { name: sameColor.name, code: sameColor.code };
+            } else {
+                const key1 = selA + '-' + selB;
+                const key2 = selB + '-' + selA;
+                colorData = colorMatrix[key1] || colorMatrix[key2] || { name: 'ふしぎな', code: '#999999' };
+            }
+            
+            res.style.backgroundColor = colorData.code;
+            res.style.borderColor = (colorData.code.toUpperCase() === '#FFFFFF') ? '#eee' : '#fff';
+            msg.textContent = colorData.name + 'いろが できた！';
+        }
+
+        init();
+
+        // 画面全体の長押し・メニュー展開対策
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+    </script>
+</body>
+</html>
